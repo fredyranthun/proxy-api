@@ -3,6 +3,8 @@ import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+import { PaginatedData } from 'src/pagination/paginated-data.interface';
+import { Result } from 'src/results/result.interface';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
@@ -33,12 +35,20 @@ describe('AppController (e2e)', () => {
         });
     });
 
-    it('should return an array of results when a query is provided', () => {
+    it('should return paginated results when a query is provided', () => {
       return request(app.getHttpServer())
-        .get('/results?q=test')
+        .get('/results?q=test&page=1&size=2')
         .expect(200)
         .expect((res) => {
-          expect(Array.isArray(res.body)).toBeTruthy();
+          const body: PaginatedData<Result> = res.body as PaginatedData<Result>;
+          expect(res.body).toHaveProperty('data');
+          expect(res.body).toHaveProperty('pagination');
+          expect(Array.isArray(body.data)).toBeTruthy();
+          expect(body.pagination).toHaveProperty('totalRecords');
+          expect(body.pagination).toHaveProperty('currentPage');
+          expect(body.pagination).toHaveProperty('totalPages');
+          expect(body.pagination).toHaveProperty('nextPage');
+          expect(body.pagination).toHaveProperty('prevPage');
         });
     });
 
@@ -47,8 +57,9 @@ describe('AppController (e2e)', () => {
         .get('/results?q=test')
         .expect(200)
         .expect((res) => {
-          expect(Array.isArray(res.body)).toBeTruthy();
-          (res.body as any[]).forEach((item) => {
+          const body: PaginatedData<Result> = res.body as PaginatedData<Result>;
+          expect(Array.isArray(body.data)).toBeTruthy();
+          body.data.forEach((item) => {
             expect(item).toHaveProperty('url');
             expect(item).toHaveProperty('title');
           });

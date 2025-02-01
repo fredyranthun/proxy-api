@@ -1,37 +1,36 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Category, SearchService, Topic } from 'src/search/search.service';
-
-export interface Result {
-  url: string;
-  title: string;
-}
+import { SearchService } from 'src/search/search.service';
+import { Result } from './result.interface';
+import { ParseResultsService } from 'src/parse-results/parse-results.service';
+import { PaginationService } from 'src/pagination/pagination.service';
+import { PaginatedData } from 'src/pagination/paginated-data.interface';
 
 @Injectable()
 export class ResultsService {
-  constructor(private readonly searchService: SearchService) {}
+  constructor(
+    private readonly searchService: SearchService,
+    private readonly parseResultsService: ParseResultsService,
+    private readonly paginationService: PaginationService,
+  ) {}
 
-  async getResults(query: string): Promise<Result[]> {
+  async getResults(
+    query: string,
+    page: number,
+    size: number,
+  ): Promise<PaginatedData<Result>> {
     try {
       const data = await this.searchService.fetchResults(query);
-      const results = this.extractTopics(data);
-      return results;
+      const parsedData = this.parseResultsService.parse(data);
+      const paginatedData = this.paginationService.paginate(
+        parsedData,
+        page,
+        size,
+      );
+
+      return paginatedData;
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Failed to fetch results');
     }
-  }
-
-  private extractTopics(data: (Topic | Category)[]): Result[] {
-    return data.flatMap((item: Topic | Category) => {
-      if ('Topics' in item) {
-        return this.extractTopics(item.Topics);
-      } else if (item.FirstURL && item.Text) {
-        return {
-          url: item.FirstURL,
-          title: item.Text,
-        };
-      }
-      return [];
-    });
   }
 }

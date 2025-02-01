@@ -1,16 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { map, catchError, throwError, lastValueFrom } from 'rxjs';
-
-export interface Category {
-  Name: string;
-  Topics: Topic[];
-}
-
-export interface Topic {
-  FirstURL?: string;
-  Text?: string;
-}
+import { Topic } from './topic.interface';
+import { Category } from './category.interface';
 
 export interface ApiResponse {
   RelatedTopics: (Topic | Category)[];

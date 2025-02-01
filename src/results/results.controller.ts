@@ -13,12 +13,21 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
 export class ResultsController {
   constructor(private readonly resultsService: ResultsService) {}
 
+  private defaultSize = 10;
+
   @Get()
-  async getResults(@Query('q') query: string) {
+  async getResults(
+    @Query('q') query: string,
+    @Query('page') page: string,
+    @Query('size') size: string,
+  ) {
     if (!query) {
       throw new BadRequestException("Query parameter 'q' is required");
     }
 
-    return this.resultsService.getResults(query);
+    const parsedPage = page ? parseInt(page, 10) : 1;
+    const parsedSize = size ? parseInt(size, 10) : this.defaultSize;
+
+    return this.resultsService.getResults(query, parsedPage, parsedSize);
   }
 }
