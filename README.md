@@ -33,7 +33,7 @@ Or the Docker approach:
 ```bash
 docker build -t proxy-api .
 
-docker run -p 3000:3000 proxy-api
+docker run -p 4000:4000 proxy-api
 ```
 
 ## Run tests
@@ -48,6 +48,10 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+## Documentation
+
+The API Swagger Documentation can be found by accessing localhost:{{PORT}}/api
 
 ## License
 
